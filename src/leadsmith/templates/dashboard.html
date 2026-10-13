@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeadSmith</title>
+  <style>
+    :root {
+      --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #677084; --border: #e3e6ec;
+      --hot: #0f7b4b; --hot-bg: #e3f5ec; --warm: #9a6200; --warm-bg: #fdf1dc;
+      --cold: #6b7280; --cold-bg: #eef0f3; --bad: #b42318; --bad-bg: #fde8e7; --accent: #3b5bdb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151b; --card: #1a1e26; --text: #e6e9ef; --muted: #98a1b3; --border: #2a303b;
+        --hot: #4ade80; --hot-bg: #12301f; --warm: #fbbf24; --warm-bg: #33270d;
+        --cold: #a3a9b6; --cold-bg: #262b34; --bad: #f87171; --bad-bg: #3a1717; --accent: #7c9cff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+           background: var(--bg); color: var(--text); }
+    main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+    header { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline;
+             justify-content: space-between; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: 24px; }
+    .stats { color: var(--muted); font-size: 14px; }
+    form.filter { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+    form.filter input { width: 64px; padding: 4px 8px; border: 1px solid var(--border);
+                        border-radius: 6px; background: var(--card); color: var(--text); }
+    form.filter button { padding: 5px 12px; border: 0; border-radius: 6px;
+                         background: var(--accent); color: #fff; cursor: pointer; }
+    .lead { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+            padding: 18px 20px; margin-bottom: 14px; }
+    .top { display: flex; gap: 16px; align-items: flex-start; }
+    .score { flex: none; width: 52px; height: 52px; border-radius: 10px; display: grid;
+             place-items: center; font-weight: 700; font-size: 18px; }
+    .hot { background: var(--hot-bg); color: var(--hot); }
+    .warm { background: var(--warm-bg); color: var(--warm); }
+    .cold { background: var(--cold-bg); color: var(--cold); }
+    .failed { background: var(--bad-bg); color: var(--bad); font-size: 12px; }
+    .name { font-weight: 600; font-size: 17px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .meta a { color: var(--accent); text-decoration: none; }
+    p { margin: 8px 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--cold-bg); }
+    details { margin-top: 10px; }
+    summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+    pre { white-space: pre-wrap; font: inherit; background: var(--bg); border-radius: 8px;
+          padding: 12px 14px; margin: 8px 0 0; }
+    .error { color: var(--bad); font-size: 14px; }
+    .empty { text-align: center; color: var(--muted); padding: 48px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>LeadSmith</h1>
+      <div class="stats">
+        {{ counts.get('enriched', 0) }} enriched · {{ counts.get('new', 0) }} pending ·
+        {{ counts.get('failed', 0) }} failed
+      </div>
+    </div>
+    <form class="filter" method="get">
+      <label for="min_score">Min score</label>
+      <input id="min_score" name="min_score" type="number" min="0" max="100" value="{{ min_score }}">
+      <button type="submit">Filter</button>
+    </form>
+  </header>
+
+  {% for lead in leads %}
+  <article class="lead">
+    <div class="top">
+      {% if lead.status == 'failed' %}
+        <div class="score failed">failed</div>
+      {% elif lead.fit_score is none %}
+        <div class="score cold">—</div>
+      {% else %}
+        <div class="score {{ 'hot' if lead.fit_score >= 75 else 'warm' if lead.fit_score >= 50 else 'cold' }}">
+          {{ lead.fit_score }}
+        </div>
+      {% endif %}
+      <div style="min-width:0;flex:1">
+        <div class="name">{{ lead.company }}</div>
+        <div class="meta">
+          <a href="{{ lead.website }}" target="_blank" rel="noopener">{{ lead.website }}</a>
+          {% if lead.industry %} · {{ lead.industry }}{% endif %}
+          {% if lead.contact_name %} · {{ lead.contact_name }}{% endif %}
+        </div>
+        {% if lead.error %}<p class="error">{{ lead.error }}</p>{% endif %}
+        {% if lead.summary %}<p>{{ lead.summary }}</p>{% endif %}
+        {% if lead.fit_reasoning %}<p class="meta">{{ lead.fit_reasoning }}</p>{% endif %}
+        {% if lead.opportunities %}
+          <div class="tags">
+            {% for item in lead.opportunities %}<span class="tag">{{ item }}</span>{% endfor %}
+          </div>
+        {% endif %}
+        {% if lead.email_body %}
+          <details>
+            <summary>Draft email: {{ lead.email_subject }}</summary>
+            <pre>{{ lead.email_body }}</pre>
+          </details>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% else %}
+  <div class="empty">No leads yet. Run <code>leadsmith import examples/leads.csv</code> to get started.</div>
+  {% endfor %}
+</main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Describes the agency doing the outreach. Swap this out for your own offer.
+agency_name: Northwind Automation
+sender_name: Alex
+services:
+  - Python automations that remove repetitive admin work
+  - API integrations between CRMs, booking tools, spreadsheets, and accounting software
+  - AI workflows for inbound lead handling, email triage, and document processing
+ideal_customer: >
+  Small and mid-sized service businesses (5-200 employees) in the US that run on a mix of
+  SaaS tools and still do a lot of manual data entry, follow-ups, and scheduling.
+good_fit_signals:
+  - online booking, quote requests, or intake forms
+  - multiple locations or a growing team
+  - mentions of a CRM, scheduling, invoicing, or dispatch
+  - high volume of customer inquiries
+bad_fit_signals:
+  - large enterprise with an in-house engineering team
+  - pure software or developer-tools company
+  - no clear way customers contact or buy from them
+tone: friendly, concise, plain American English, no hype, no buzzwords
+call_to_action: Open to a quick 15-minute call next week to see if this would help?
